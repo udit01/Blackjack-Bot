@@ -63,7 +63,7 @@ def enumerate_all_states():
     #         pass
     
     for dc in range(1, 11):
-
+        # Dealer card 1 will be dealt specially 
         for total in range(1, 22): # Total 21 is different from black jack state? 
             s = State('F', 'F', 1.0, dc, total)
             all_states.append(s)
@@ -90,7 +90,12 @@ def enumerate_all_states():
         hash_to_id[s.hash] = id_
         id_ += 1
 
-
+        # The blackjack state
+        s = State( 'F' , 'T', 1.5, dc, 21)
+        all_states.append(s)
+        hash_to_id[s.hash] = id_
+        id_ += 1
+        
 if __name__ == "__main__":
     prob = float(sys.argv[1])
     enumerate_all_states()
