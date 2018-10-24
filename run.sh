@@ -1,2 +1,2 @@
 #!/bin/bash
-./BlackJackPlayer $1
+./BlackJackPlayer.py $1
