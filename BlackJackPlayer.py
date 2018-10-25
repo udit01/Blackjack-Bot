@@ -45,28 +45,24 @@ class State:
 
     def get_hit_sum(self, card):
         # returns the best non bust score score
-        val = 0
-        if self.ace_count == 0:
-            val = (self.non_ace_sum) 
-        else :
-            score = self.non_ace_sum
-            if(self.ace_count>1):
-                score = score + self.ace_count - 1
-            if(score+11>21):
-                score = score + 1
-            else:
-                score = score + 11
-            val = score
-
+        
         if card > 1 :
             if self.ace_count == 0:
-                return (val+card)
+                return (self.non_ace_sum + card)
             else :
-                
+                pot_val = self.non_ace_sum + 1*(self.ace_count-1) + 11*1+ card
+                return ((pot_val - 10) if pot_val > 21 else pot_val) # This may be bust or over 21
+
+        else : # card is an ace 
+            if self.ace_count == 0:
+                pot_val = self.non_ace_sum + 11 
+                return ((pot_val - 10) if pot_val > 21 else pot_val)
+            else : # We also have an ace, but 2 aces can never be simultaneously be counted as 11 therefore our aces will all be 1
+                pot_val = self.non_ace_sum + 1*(self.ace_count) + 11
+                return ((pot_val - 10)if pot_val > 21 else pot_val) # This may be bust or over 21
 
     def hit(self, new_card):
         new_id = -1
-
 
         if new_card == 1 : # If the new card is an ace
             if self.ace_count > 0 : # We have aces (atmost 1 can be soft)
