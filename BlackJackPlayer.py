@@ -115,6 +115,8 @@ class State:
                     # We have a single ace card
                     if new_card == 10 : # A face card, threfore BLACKJACK!
                         s = State('F', 'T', 'T', self.non_ace_sum + new_card, self.bet, self.dealer_card, 'T', self.splitted_aces) # Blackjack param
+                        if s.hash not in hash_to_id :
+                            print(self.hash)
                         new_id = hash_to_id[s.hash]        
                     else : # OTHER CARD, therfore normal hit
                         s = State('F', 'T', 'T', self.non_ace_sum + new_card, self.bet, self.dealer_card, self.blackjack, self.splitted_aces)
@@ -469,6 +471,6 @@ def bellman_backup(eps,p):
 if __name__ == "__main__":
     prob = float(sys.argv[1])
     enumerate_all_states()
-    bellman_backup(0.0001,prob)
-
+    # bellman_backup(0.0001,prob)
+    print_output()
 # Write to file in a specific format
