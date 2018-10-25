@@ -66,43 +66,50 @@ class State:
 
         if new_card == 1 : # If the new card is an ace
             if self.ace_count > 0 : # We have aces (atmost 1 can be soft)
-                pass
+                if self.mult_cards == 'T' : # We have multiple cards so no blackjack
+                    if self.has_pair == 'T' : # We have a paired state
+                        pass
+                    else : # We don't have a paired state
+                        pass
+                else : # Single cards, potential blackjack?
+                    if self.has_pair == 'T' : # We have a paired state
+                        pass
+                    else : # We don't have a paired state
+                        pass
             else: # We don't have any aces
-                pass
+                if self.mult_cards == 'T' : # We have multiple cards so no blackjack
+                    if self.has_pair == 'T' : # We have a paired state
+                        pass
+                    else : # We don't have a paired state
+                        pass
+                else : # Single cards, potential blackjack?
+                    if self.has_pair == 'T' : # We have a paired state
+                        pass
+                    else : # We don't have a paired state
+                        pass
         else : # If the new card is a number not an ace
             if self.ace_count > 0 : # We have aces (atmost 1 can be soft)
-                pass
+                if self.mult_cards == 'T' : # We have multiple cards so no blackjack
+                    if self.has_pair == 'T' : # We have a paired state
+                        pass
+                    else : # We don't have a paired state
+                        pass
+                else : # Single cards, potential blackjack?
+                    if self.has_pair == 'T' : # We have a paired state
+                        pass
+                    else : # We don't have a paired state
+                        pass
             else: # We don't have any aces
-                pass
-
-        # if self.has_ace == 'F': 
-        #     # Not an ace
-        #     if new_card != 1 :
-        #         if(self.total + new_card) > 21 :
-        #             return -1 # Or bust state
-        #         else :
-        #             if self.mult_cards == 'T' :
-        #                 s = State('F', 'F', 'T', self.bet, self.dealer_card, self.total+new_card)
-        #             else : 
-        #                 if (self.total == new_card):
-        #                     s = State('T', 'F', 'T', self.bet, self.dealer_card, self.total+new_card)
-        #                 else : 
-        #                     s = State('F', 'F', 'T', self.bet, self.dealer_card, self.total+new_card)
-
-        #     # New card is an ace
-        #     else : 
-        #         if(self.total + new_card) > 21 :
-        #             return -1 # Or bust state
-        #         else :
-        #             if self.mult_cards == 'T' :
-        #                     s = State('F', 'T', 'T', self.bet, self.dealer_card, self.total+new_card)
-        #             else : 
-        #                 if (self.total == new_card):
-        #                     s = State('T', 'F', 'T', self.bet, self.dealer_card, self.total+new_card)
-        #                 else : 
-        #                     s = State('F', 'F', 'T', self.bet, self.dealer_card, self.total+new_card)
-                
-
+                if self.mult_cards == 'T' : # We have multiple cards so no blackjack
+                    if self.has_pair == 'T' : # We have a paired state
+                        pass
+                    else : # We don't have a paired state
+                        pass
+                else : # Single cards, potential blackjack?
+                    if self.has_pair == 'T' : # We have a paired state
+                        pass
+                    else : # We don't have a paired state
+                        pass
 
         new_id = hash_to_id[s.hash]        
         return new_id
