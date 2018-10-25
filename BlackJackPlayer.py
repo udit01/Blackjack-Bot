@@ -499,6 +499,6 @@ def bellman_backup(eps,p):
 if __name__ == "__main__":
     prob = float(sys.argv[1])
     enumerate_all_states()
-    # bellman_backup(0.0001,prob)
+    bellman_backup(0.00000000001,prob)
     print_output()
 # Write to file in a specific format
