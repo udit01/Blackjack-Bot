@@ -11,7 +11,7 @@ prob = 0.307
 
 class State:
     
-    def __init__(self, hp, mc, ace_count, nas, bet, dealer_card, blackjack='F'):
+    def __init__(self, hp, mc, ace_count, nas, bet, dealer_card, blackjack='F', splitted_aces='F'):
         self.has_pair = hp
         self.mult_cards = mc # 1 or 2(haspair) or multiple
         self.ace_count = ace_count
@@ -19,6 +19,7 @@ class State:
         self.bet = bet
         self.dealer_card = dealer_card
         self.blackjack = blackjack
+        self.splitted_aces = splitted_aces
 
         self.best_move = 'H'
         
@@ -26,7 +27,7 @@ class State:
         self.final_reward = 0.0 # To be calculated
 
         # self.hash = (self.has_pair) + "_" + (self.mult_cards) + "_" + str(self.ace_count) + "_" + str(self.non_ace_sum) + "_"  + str(self.bet) + "_" + str(self.dealer_card) + "_" + str(self.total)
-        self.hash = (self.has_pair) + "_" + (self.mult_cards) + "_" + str(self.ace_count) + "_" + str(self.non_ace_sum) + "_"  + str(int(self.bet)) + "_" + str(self.dealer_card) + "_" + self.blackjack
+        self.hash = (self.has_pair) + "_" + (self.mult_cards) + "_" + str(self.ace_count) + "_" + str(self.non_ace_sum) + "_"  + str(int(self.bet)) + "_" + str(self.dealer_card) + "_" + self.blackjack + "_" + self.splitted_aces
         # self.hash = 'F_F_1_2_5'
         self.id = -1
     
@@ -295,49 +296,51 @@ def enumerate_all_states():
 
     # TODO : ENUMERATE all these states correctly :
 
-    for bet in range(1, 3):
-        for dc in range(1, 11):
-            # Dealer card 1 will be dealt specially 
-            for total in range(1, 22): # Total 21 is different from black jack state? 
-                s = State('F', 'T', 'T', bet, dc, total)
-                all_states.append(s)
-                hash_to_id[s.hash] = id_
-                id_ += 1
-            
-            # Ace with other in 2 to 9
-            for other in range(2, 10):
-                s = State('F', 'T', 'T', bet, dc, other)
-                all_states.append(s)
-                hash_to_id[s.hash] = id_
-                id_ += 1
-            
-            # Pair with 2 to 10
-            for p in range(2, 11):
-                s = State('T', 'F', 'T', bet, dc, 2*p)
-                all_states.append(s)
-                hash_to_id[s.hash] = id_
-                id_ += 1
+    for splitted_aces in ['T', 'F']:
+        for blackjack in ['T', 'F']:
+            for bet in range(1, 3):
+                for dc in range(1, 11):
+                    # Dealer card 1 will be dealt specially 
+                    for total in range(1, 22): # Total 21 is different from black jack state? 
+                        s = State('F', 'T', 'T', bet, dc, total)
+                        all_states.append(s)
+                        hash_to_id[s.hash] = id_
+                        id_ += 1
+                    
+                    # Ace with other in 2 to 9
+                    for other in range(2, 10):
+                        s = State('F', 'T', 'T', bet, dc, other)
+                        all_states.append(s)
+                        hash_to_id[s.hash] = id_
+                        id_ += 1
+                    
+                    # Pair with 2 to 10
+                    for p in range(2, 11):
+                        s = State('T', 'F', 'T', bet, dc, 2*p)
+                        all_states.append(s)
+                        hash_to_id[s.hash] = id_
+                        id_ += 1
 
-            # Pair of aces 
-            s = State('T', 'T', 'T', bet, dc, 1)
-            all_states.append(s)
-            hash_to_id[s.hash] = id_
-            id_ += 1
+                    # Pair of aces 
+                    s = State('T', 'T', 'T', bet, dc, 1)
+                    all_states.append(s)
+                    hash_to_id[s.hash] = id_
+                    id_ += 1
 
-            # Singular states
-            for card in range(1, 11):
-                s = State('T', 'F', 'F', bet, dc, (card if card>1 else 0))
-                all_states.append(s)
-                hash_to_id[s.hash] = id_
-                id_ += 1
+                    # Singular states
+                    for card in range(1, 11):
+                        s = State('T', 'F', 'F', bet, dc, (card if card>1 else 0))
+                        all_states.append(s)
+                        hash_to_id[s.hash] = id_
+                        id_ += 1
 
-            
-            # What's special in this state
-            # The blackjack state
-            s = State( 'F' , 'T', 'T', bet, dc, 10, 'T')
-            all_states.append(s)
-            hash_to_id[s.hash] = id_
-            id_ += 1
+                    
+                    # What's special in this state
+                    # The blackjack state
+                    s = State( 'F' , 'T', 'T', bet, dc, 10, 'T')
+                    all_states.append(s)
+                    hash_to_id[s.hash] = id_
+                    id_ += 1
         
 if __name__ == "__main__":
     global prob
