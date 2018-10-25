@@ -302,34 +302,34 @@ def enumerate_all_states():
                 for dc in range(1, 11):
                     # Dealer card 1 will be dealt specially 
                     for total in range(1, 22): # Total 21 is different from black jack state? 
-                        s = State('F', 'T', 'T', bet, dc, total)
+                        s = State('F', 'T', 0,total, bet, dc, blackjack, splitted_aces)
                         all_states.append(s)
                         hash_to_id[s.hash] = id_
                         id_ += 1
                     
                     # Ace with other in 2 to 9
                     for other in range(2, 10):
-                        s = State('F', 'T', 'T', bet, dc, other)
+                        s = State('F', 'T', 1, other, bet, dc, blackjack, splitted_aces)
                         all_states.append(s)
                         hash_to_id[s.hash] = id_
                         id_ += 1
                     
                     # Pair with 2 to 10
                     for p in range(2, 11):
-                        s = State('T', 'F', 'T', bet, dc, 2*p)
+                        s = State('T', 'T', 0, 2*p, bet, dc, blackjack, splitted_aces)
                         all_states.append(s)
                         hash_to_id[s.hash] = id_
                         id_ += 1
 
                     # Pair of aces 
-                    s = State('T', 'T', 'T', bet, dc, 1)
+                    s = State('T', 'T', 2, 0, bet, dc, blackjack, splitted_aces)
                     all_states.append(s)
                     hash_to_id[s.hash] = id_
                     id_ += 1
 
                     # Singular states
                     for card in range(1, 11):
-                        s = State('T', 'F', 'F', bet, dc, (card if card>1 else 0))
+                        s = State('T', 'F', 0 if card > 1 else 1, (card if card>1 else 0), bet, dc, blackjack, splitted_aces)
                         all_states.append(s)
                         hash_to_id[s.hash] = id_
                         id_ += 1
@@ -337,7 +337,7 @@ def enumerate_all_states():
                     
                     # What's special in this state
                     # The blackjack state
-                    s = State( 'F' , 'T', 'T', bet, dc, 10, 'T')
+                    s = State( 'F' , 'T', 'T', bet, dc, 10, blackjack, splitted_aces)
                     all_states.append(s)
                     hash_to_id[s.hash] = id_
                     id_ += 1
