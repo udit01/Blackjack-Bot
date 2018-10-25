@@ -146,7 +146,8 @@ class State:
     
     def double(self):
         assert(self.bet == 1)
-        s = State(self.has_pair, )
+        s = State(self.has_pair, self.mult_cards, self.has_ace, self.non_ace_sum, 2, self.dealer_card, self.blackjack, self.splitted_aces)
+        return hash_to_id[s.hash]
 
     # returns 
     # def transition(self, action):
