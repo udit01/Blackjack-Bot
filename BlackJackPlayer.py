@@ -70,6 +70,8 @@ class State:
                         sum_ -= 10 # Harden the ace
                         if sum_ <= 21 : 
                             s = State('F', 'T','T', self.non_ace_sum+1, self.bet, self.dealer_card, self.blackjack, self.splitted_aces)
+                            if s.hash not in hash_to_id :
+                                print(self.hash)
                             new_id = hash_to_id[s.hash]        
                         else : # BUSTED 
                             return (-self.bet)
@@ -115,6 +117,8 @@ class State:
                     # We have a single ace card
                     if new_card == 10 : # A face card, threfore BLACKJACK!
                         s = State('F', 'T', 'T', self.non_ace_sum + new_card, self.bet, self.dealer_card, 'T', self.splitted_aces) # Blackjack param
+                        if s.hash not in hash_to_id :
+                                print(self.hash)
                         new_id = hash_to_id[s.hash]        
                     else : # OTHER CARD, therfore normal hit
                         s = State('F', 'T', 'T', self.non_ace_sum + new_card, self.bet, self.dealer_card, self.blackjack, self.splitted_aces)
@@ -136,6 +140,8 @@ class State:
                             new_id = hash_to_id[s.hash]        
                         else :
                             s = State('F', 'T', 'F', sum_, self.bet, self.dealer_card, self.splitted_aces )
+                            if s.hash not in hash_to_id :
+                                print(self.hash)
                             new_id = hash_to_id[s.hash]        
                     else : # BUSTED # MAKE A BUST STATE or return this
                         return (-self.bet)
@@ -151,12 +157,16 @@ class State:
         # What to return ?
         if self.has_ace == 'T' :
             s = State('F', 'F', 'T', 0, self.bet, self.dealer_card, self.blackjack, 'T')
+            if s.hash not in hash_to_id :
+                print(self.hash)
+            return(hash_to_id[s.hash])
         else :
             s = State('F', 'F', 'F', self.non_ace_sum//2, self.bet, self.dealer_card, self.blackjack, 'F')
-        
+            if s.hash not in hash_to_id :
+                print(self.hash)
+            return(hash_to_id[s.hash])
         # IN case of splitting aces can only be done once
         
-        return(hash_to_id[s.hash])
     
     def double(self):
         assert(self.bet == 1)
@@ -236,7 +246,15 @@ def print_output():
         outfile.write(writeString)
         outfile.close()
 
-
+def comp_hand_score(has_ace,non_ace_sum):
+    if has_ace == 'F':
+        return non_ace_sum
+    score = 0
+    if (non_ace_sum>10):
+        score = non_ace_sum + 1
+    else:
+        score = non_ace_sum + 11
+    return score
 
 def enumerate_all_states():
 
@@ -262,6 +280,25 @@ def enumerate_all_states():
                         for dc in range(1, 11):
                             for blackjack in choices:
                                 for splitted_aces in choices:
+                                    if hp == 'T' and mc == 'F' :
+                                        continue
+                                    if ha == 'F' and blackjack == 'T' :
+                                        continue
+                                    sc = comp_hand_score(ha,nas)
+                                    if blackjack == 'T' and sc != 21 :
+                                        continue
+                                    if hp == 'T' and ha == 'T' and nas != 1 :
+                                        continue
+                                    if mc == 'F' and ha == 'T' and nas != 0 :
+                                        continue
+                                    if mc == 'F' and ha == 'F' and nas == 0 :
+                                        continue
+                                    if ha == 'F' and splitted_aces == 'T' :
+                                        continue
+                                    if ha == 'F' and hp == 'T' and nas == 0 :
+                                        continue
+                                    if ha == 'F' and hp == 'T' and (nas%2) == 1 :
+                                        continue
                                     s = State(hp, mc, ha, nas, bet, dc, blackjack, splitted_aces)
                                     all_states.append(s)
                                     hash_to_id[s.hash] = id_
@@ -318,16 +355,6 @@ def enumerate_all_states():
 actions = ['H','S','P','D']
 
 expected_stand_reward = {}
-
-def comp_hand_score(has_ace,non_ace_sum):
-    if has_ace == 'F':
-        return non_ace_sum
-    score = 0
-    if (non_ace_sum>10):
-        score = non_ace_sum + 1
-    else:
-        score = non_ace_sum + 11
-    return score
 
 
 def compute_stand_reward(pl_has_ace,pl_non_ace_score,dealer_has_ace,dealer_non_ace_score,player_blackjack,dealer_first_call,p,bet):
@@ -391,6 +418,9 @@ def bellman_backup(eps,p):
             for act in actions:
                 current_reward = 0.0
                 if st.bet == 2 :
+                    if act != 'S':
+                        continue
+                if st.blackjack == 'T':
                     if act != 'S':
                         continue
                 if act=='H':
