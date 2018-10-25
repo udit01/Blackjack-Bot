@@ -341,10 +341,113 @@ def enumerate_all_states():
                     all_states.append(s)
                     hash_to_id[s.hash] = id_
                     id_ += 1
+
+actions = ['H','S','P','D']
+                    
+def bellman_backup(eps,p):
+    stop = False
+    while(not stop):
         
+        for st in all_states :
+            best_reward = -100.0
+            for act in actions:
+                current_reward = 0.0
+                if st.bet == 2 :
+                    if act != 'S':
+                        continue
+                if act=='H':
+                    for i in range(1,11):
+                        ret_id = st.hit(i)
+                        add_reward = 0.0
+                        if (ret_id<0):
+                            add_reward = float(ret_id)
+                        else:
+                            add_reward = float(all_states[ret_id].old_reward)
+                        if(i==10):
+                            current_reward = current_reward + p*add_reward
+                        else:
+                            oth_prob = (1.0 - p)/9.0
+                            current_reward = current_reward + oth_prob*add_reward
+                elif act=='S':
+                    for i in range(1,11): # dealers other card 
+                        add_reward = 0.0
+                        mult_prob = (1.0 - p)/9.0
+                        dealer_sum = 0
+                        if(i==10):
+                            mult_prob = p
+                        if (i!=1):
+                            if (st.dealer_card!=1):
+                                dealer_sum = i + st.dealer_card
+                            else :
+                                dealer_sum = i + 11
+                        else :
+                            if(st.dealer_card!=1):
+                                dealer_sum = st.dealer_card + 11
+                            else:
+                                dealer_sum = 12
+                        if(dealer_sum>=17):
+                            cur_score = st.get_score()
+                            if cur_score == 21 :
+                                if st.blackjack == 'T':
+                                    if dealer_sum == 21 :  # dealer currently has 2 cards only so 21 implies blackjack
+                                        add_reward = 0.0
+                                    else :
+                                        add_reward = 1.5 * float(st.bet)
+                                else:
+                                    if dealer_sum == 21 : # dealer currently has 2 cards only so 21 implies blackjack
+                                        add_reward = -1.0 * float(st.bet)
+                                    else :
+                                        add_reward = float(st.bet)
+
+                            elif cur_score >= 22 :
+                                add_reward = float(-1*st.bet)
+                            elif dealer_sum >= 22 :
+                                add_reward = float(st.bet)
+                            else :
+                                if cur_score > dealer_sum :
+                                    add_reward = float(st.bet)
+                                elif cur_score < dealer_sum :
+                                    add_reward = -1.0 * float(st.bet)
+                                else:
+                                    add_reward = 0.0
+                        else :
+                            pass # call recursive function
+
+                        current_reward = current_reward + mult_prob*add_reward
+                elif act=='P':
+                    if (st.has_pair == 'F') :
+                        current_reward = -100.0
+                    elif (st.splitted_aces == 'T'):
+                        current_reward = -100.0
+                    else :
+                        st_id = st.split()
+                        current_reward = 2.0 * all_states[st_id].old_reward
+
+                else: #double
+                    if st.bet == 2 :
+                        current_reward = -100.0
+                    else :
+                        st_id = st.double()
+                        current_reward = all_states[st_id].old_reward
+
+                if current_reward >= best_reward :
+                    st.best_move = act
+                best_reward = max(best_reward,current_reward)
+            st.final_reward = best_reward
+        
+        max_val = 0.0
+        for st in all_states:
+            cur_diff = abs(st.final_reward - st.old_reward)
+            max_val = max(max_val,cur_diff)
+            st.old_reward = st.final_reward
+            st.final_reward = 0.0
+        if(max_val<eps):
+            stop = True
+
 if __name__ == "__main__":
     global prob
     prob = float(sys.argv[1])
     enumerate_all_states()
+    bellman_backup(0.0000000001,prob)
 
 # Write to file in a specific format
