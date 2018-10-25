@@ -411,11 +411,11 @@ def compute_stand_reward(pl_has_ace,pl_non_ace_score,dealer_has_ace,dealer_non_a
 
 def bellman_backup(eps,p):
     stop = False
-    cnt = 0
+    # cnt = 0
     while(not stop):
-        cnt = cnt + 1 
-        if cnt > 10000:
-            break
+        # cnt = cnt + 1 
+        # if cnt > 10000:
+        #     break
         for st in all_states :
             best_reward = -100.0
             for act in actions:
@@ -502,6 +502,6 @@ def bellman_backup(eps,p):
 if __name__ == "__main__":
     prob = float(sys.argv[1])
     enumerate_all_states()
-    bellman_backup(0.00000001,prob)
+    bellman_backup(0.0000001,prob)
     print_output()
 # Write to file in a specific format
