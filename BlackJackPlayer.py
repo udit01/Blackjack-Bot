@@ -136,9 +136,9 @@ class State:
         assert(self.has_pair == 'T')
         # What to return ?
         if self.has_ace == 'T' :
-            s = State('F', 'F', 1, 0, self.bet, self.dealer_card, self.blackjack, 'T')
+            s = State('F', 'F', 'T', 0, self.bet, self.dealer_card, self.blackjack, 'T')
         else :
-            s = State('F', 'F', 0, self.non_ace_sum//2, self.bet, self.dealer_card, self.blackjack, 'F')
+            s = State('F', 'F', 'F', self.non_ace_sum//2, self.bet, self.dealer_card, self.blackjack, 'F')
         
         # IN case of splitting aces can only be done once
         
