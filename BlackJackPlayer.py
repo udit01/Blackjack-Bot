@@ -7,7 +7,6 @@ hash_to_id ={}
 
 # List of all possible states
 all_states = []
-prob = 0.307
 
 class State:
     
@@ -343,7 +342,72 @@ def enumerate_all_states():
                     id_ += 1
 
 actions = ['H','S','P','D']
-                    
+
+expected_stand_reward = {}
+
+def comp_hand_score(has_ace,non_ace_sum):
+    if has_ace == 'F':
+        return non_ace_sum
+    score = 0
+    if (non_ace_sum>10):
+        score = non_ace_sum + 1
+    else:
+        score = non_ace_sum + 11
+    return score
+
+
+def compute_stand_reward(pl_has_ace,pl_non_ace_score,dealer_has_ace,dealer_non_ace_score,player_blackjack,dealer_first_call,p,bet):
+    global expected_stand_reward
+    hash_str = str(pl_has_ace) + "_" + str(pl_non_ace_score) + "_" + str(dealer_has_ace) + "_" + str(dealer_non_ace_score) + "_" + str(player_blackjack) + "_" + str(dealer_first_call)
+    if hash_str in expected_stand_reward :
+        return expected_stand_reward[hash_str]
+    add_reward = 0.0
+    pl_score = comp_hand_score(pl_has_ace,pl_non_ace_score)
+    dealer_score = comp_hand_score(dealer_has_ace,dealer_non_ace_score)
+
+    if(dealer_score>=17):
+        if pl_score == 21 :
+            if player_blackjack == 'T':
+                if dealer_score== 21 and dealer_first_call=='T' :  
+                    add_reward = 0.0
+                else :
+                    add_reward = 1.5 * float(bet)
+            else:
+                if dealer_score == 21 and dealer_first_call=='T'  : 
+                    add_reward = -1.0 * float(bet)
+                elif dealer_score == 21 :
+                    add_reward = 0.0
+                else :
+                    add_reward = float(bet)
+        elif pl_score >= 22 :
+            add_reward = float(-1*bet)
+        elif dealer_score >= 22 :
+            add_reward = float(bet)
+        else :
+            if pl_score > dealer_score :
+                add_reward = float(bet)
+            elif pl_score < dealer_score :
+                add_reward = -1.0 * float(bet)
+            else:
+                add_reward = 0.0
+    else :
+        for i in range(1,11):
+            cur_reward = 0.0
+            mult_prob = (1.0 - p)/9.0
+            if (i==10):
+                mult_prob = p
+            if (i!=1):
+                cur_reward = compute_stand_reward(pl_has_ace,pl_non_ace_score,dealer_has_ace,dealer_non_ace_score+i,player_blackjack,'F',p,bet)
+            else :
+                if dealer_has_ace == 'T' :
+                    cur_reward = compute_stand_reward(pl_has_ace,pl_non_ace_score,dealer_has_ace,dealer_non_ace_score+1,player_blackjack,'F',p,bet)
+                else :
+                    cur_reward = compute_stand_reward(pl_has_ace,pl_non_ace_score,'T',dealer_non_ace_score,player_blackjack,'F',p,bet)
+            add_reward = add_reward + mult_prob*cur_reward
+
+    expected_stand_reward[hash_str] = add_reward
+    return add_reward
+
 def bellman_backup(eps,p):
     stop = False
     while(not stop):
@@ -372,47 +436,19 @@ def bellman_backup(eps,p):
                     for i in range(1,11): # dealers other card 
                         add_reward = 0.0
                         mult_prob = (1.0 - p)/9.0
-                        dealer_sum = 0
                         if(i==10):
                             mult_prob = p
                         if (i!=1):
                             if (st.dealer_card!=1):
-                                dealer_sum = i + st.dealer_card
+                                add_reward = compute_stand_reward(st.has_ace,st.non_ace_sum,'F',(i + st.dealer_card),st.blackjack,'T',p,st.bet)
                             else :
-                                dealer_sum = i + 11
+                                add_reward = compute_stand_reward(st.has_ace,st.non_ace_sum,'T',(i + 11),st.blackjack,'T',p,st.bet)
                         else :
                             if(st.dealer_card!=1):
-                                dealer_sum = st.dealer_card + 11
+                                add_reward = compute_stand_reward(st.has_ace,st.non_ace_sum,'T',(st.dealer_card + 11),st.blackjack,'T',p,st.bet)
                             else:
-                                dealer_sum = 12
-                        if(dealer_sum>=17):
-                            cur_score = st.get_score()
-                            if cur_score == 21 :
-                                if st.blackjack == 'T':
-                                    if dealer_sum == 21 :  # dealer currently has 2 cards only so 21 implies blackjack
-                                        add_reward = 0.0
-                                    else :
-                                        add_reward = 1.5 * float(st.bet)
-                                else:
-                                    if dealer_sum == 21 : # dealer currently has 2 cards only so 21 implies blackjack
-                                        add_reward = -1.0 * float(st.bet)
-                                    else :
-                                        add_reward = float(st.bet)
-
-                            elif cur_score >= 22 :
-                                add_reward = float(-1*st.bet)
-                            elif dealer_sum >= 22 :
-                                add_reward = float(st.bet)
-                            else :
-                                if cur_score > dealer_sum :
-                                    add_reward = float(st.bet)
-                                elif cur_score < dealer_sum :
-                                    add_reward = -1.0 * float(st.bet)
-                                else:
-                                    add_reward = 0.0
-                        else :
-                            pass # call recursive function
-
+                                add_reward = compute_stand_reward(st.has_ace,st.non_ace_sum,'T',12,st.blackjack,'T',p,st.bet)
+                        
                         current_reward = current_reward + mult_prob*add_reward
                 elif act=='P':
                     if (st.has_pair == 'F') :
@@ -428,7 +464,19 @@ def bellman_backup(eps,p):
                         current_reward = -100.0
                     else :
                         st_id = st.double()
-                        current_reward = all_states[st_id].old_reward
+                        for i in range(1,11):
+                            ret_id = all_states[st_id].hit(i)
+                            add_reward = 0.0
+                            if (ret_id<0):
+                                add_reward = float(ret_id)
+                            else:
+                                add_reward = float(all_states[ret_id].old_reward)
+                            if(i==10):
+                                current_reward = current_reward + p*add_reward
+                            else:
+                                oth_prob = (1.0 - p)/9.0
+                                current_reward = current_reward + oth_prob*add_reward
+                        # current_reward = all_states[st_id].old_reward
 
                 if current_reward >= best_reward :
                     st.best_move = act
@@ -445,9 +493,8 @@ def bellman_backup(eps,p):
             stop = True
 
 if __name__ == "__main__":
-    global prob
     prob = float(sys.argv[1])
     enumerate_all_states()
-    bellman_backup(0.0000000001,prob)
+    bellman_backup(0.0001,prob)
 
 # Write to file in a specific format
