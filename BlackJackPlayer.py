@@ -65,54 +65,66 @@ class State:
                     sum_ = self.non_ace_sum + 1 + 11 # as can ony count 1 ace as 11
                     if sum_ <= 21 : 
                         s = State('F', 'T', 'T', self.non_ace_sum+1, self.bet, self.dealer_card, self.blackjack, self.splitted_aces)
+                        new_id = hash_to_id[s.hash]        
                     else : 
                         sum_ -= 10 # Harden the ace
                         if sum_ <= 21 : 
                             s = State('F', 'T','T', self.non_ace_sum+1, self.bet, self.dealer_card, self.blackjack, self.splitted_aces)
+                            new_id = hash_to_id[s.hash]        
                         else : # BUSTED 
                             return (-self.bet)
                 else : # Single cards, potential blackjack?
                     # We have ace already, and a single card
                     s = State('T', 'T', 'T', 1, self.bet, self.dealer_card, self.blackjack, self.splitted_aces)
+                    new_id = hash_to_id[s.hash]        
             else: # We don't have any aces
                 if self.mult_cards == 'T' : # We have multiple cards so no blackjack
                     sum_ = self.non_ace_sum + 11 
                     if sum_ <= 21 :
                         s = State('F', 'T', 'T', self.non_ace_sum, self.bet, self.dealer_card, self.blackjack, self.splitted_aces) 
+                        new_id = hash_to_id[s.hash]        
                     else : 
                         sum_ -= 10
                         if sum_ <= 21 : 
                             s = State('F', 'T', 'T', self.non_ace_sum, self.bet, self.dealer_card, self.blackjack, self.splitted_aces) 
+                            new_id = hash_to_id[s.hash]        
                         else : # BUSTED
                             return (-self.bet)
                 else : # Single cards, potential blackjack?
                     if self.non_ace_sum == 10 : # BLACKJACK!
                         s = State('F', 'T', 'T', self.non_ace_sum, self.bet, self.dealer_card, 'T', self.splitted_aces) # Blackjack param
+                        new_id = hash_to_id[s.hash]        
                     else : 
                         s = State('F', 'T', 'T', self.non_ace_sum, self.bet, self.dealer_card, self.blackjack, self.splitted_aces ) 
+                        new_id = hash_to_id[s.hash]        
         else : # If the new card is a number not an ace
             if self.has_ace == 'T' : # We have aces (atmost 1 can be soft)
                 if self.mult_cards == 'T' : # We have multiple cards so no blackjack
                     sum_ = self.non_ace_sum + new_card + 11
                     if sum_ <= 21 : 
                         s = State('F', 'T', 'T', self.non_ace_sum + new_card, self.bet, self.dealer_card, self.blackjack, self.splitted_aces)
+                        new_id = hash_to_id[s.hash]        
                     else : 
                         sum_ -= 10 # Hardening the ace
                         if sum_ <= 21 : 
                             s = State('F', 'T', 'T', self.non_ace_sum + new_card, self.bet, self.dealer_card, self.blackjack, self.splitted_aces)
+                            new_id = hash_to_id[s.hash]        
                         else : # BUSTED even after hardening
                             return (-self.bet)
                 else : # Single cards, potential blackjack?
                     # We have a single ace card
                     if new_card == 10 : # A face card, threfore BLACKJACK!
                         s = State('F', 'T', 'T', self.non_ace_sum + new_card, self.bet, self.dealer_card, 'T', self.splitted_aces) # Blackjack param
+                        new_id = hash_to_id[s.hash]        
                     else : # OTHER CARD, therfore normal hit
                         s = State('F', 'T', 'T', self.non_ace_sum + new_card, self.bet, self.dealer_card, self.blackjack, self.splitted_aces)
+                        new_id = hash_to_id[s.hash]        
             else: # We don't have any aces
                 if self.mult_cards == 'T' : # We have multiple cards so no blackjack
                     sum_ = self.non_ace_sum + new_card
                     if sum_ <= 21 : # Non bust
                         s = State('F', 'T', 'F', sum_, self.bet, self.dealer_card, self.blackjack, self.splitted_aces)
+                        new_id = hash_to_id[s.hash]        
                     else : # BUSTED # MAKE A BUST STATE or return this
                         return (-self.bet)
                 else : # Single card
@@ -121,8 +133,10 @@ class State:
                     if sum_ <= 21 : # Non bust
                         if self.non_ace_sum == new_card : # Pair made
                             s = State('T', 'T', 'F', sum_, self.bet, self.dealer_card, self.splitted_aces )
+                            new_id = hash_to_id[s.hash]        
                         else :
                             s = State('F', 'T', 'F', sum_, self.bet, self.dealer_card, self.splitted_aces )
+                            new_id = hash_to_id[s.hash]        
                     else : # BUSTED # MAKE A BUST STATE or return this
                         return (-self.bet)
 
