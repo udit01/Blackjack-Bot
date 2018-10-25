@@ -14,7 +14,7 @@ class State:
     def __init__(self, hp, mc, ace_count, nas, bet, dealer_card):
         self.has_pair = hp
         self.mult_cards = mc # 1 or 2(haspair) or multiple
-        self.ace_count = ha
+        self.ace_count = ace_count
         self.non_ace_sum = nas
         self.bet = bet
         self.dealer_card = dealer_card
@@ -43,46 +43,72 @@ class State:
                 score = score + 11
             return score
 
+    def get_hit_sum(self, card):
+        # returns the best non bust score score
+        val = 0
+        if self.ace_count == 0:
+            val = (self.non_ace_sum) 
+        else :
+            score = self.non_ace_sum
+            if(self.ace_count>1):
+                score = score + self.ace_count - 1
+            if(score+11>21):
+                score = score + 1
+            else:
+                score = score + 11
+            val = score
+
+        if card > 1 :
+            if self.ace_count == 0:
+                return (val+card)
+            else :
+                
 
     def hit(self, new_card):
         new_id = -1
 
-        if self.has_ace == 'F': 
-            # Not an ace
-            if new_card != 1 :
-                if(self.total + new_card) > 21 :
-                    return -1 # Or bust state
-                else :
-                    if self.mult_cards == 'T' :
-                        s = State('F', 'F', 'T', self.bet, self.dealer_card, self.total+new_card)
-                        new_id = hash_to_id[s.hash]
-                    else : 
-                        if (self.total == new_card):
-                            s = State('T', 'F', 'T', self.bet, self.dealer_card, self.total+new_card)
-                            new_id = hash_to_id[s.hash]
-                        else : 
-                            s = State('F', 'F', 'T', self.bet, self.dealer_card, self.total+new_card)
-                            new_id = hash_to_id[s.hash]
 
-            # New card is an ace
-            else : 
-                if(self.total + new_card) > 21 :
-                    return -1 # Or bust state
-                else :
-                    if self.mult_cards == 'T' :
-                            s = State('F', 'T', 'T', self.bet, self.dealer_card, self.total+new_card)
-                            new_id = hash_to_id[s.hash]
-                    else : 
-                        if (self.total == new_card):
-                            s = State('T', 'F', 'T', self.bet, self.dealer_card, self.total+new_card)
-                            new_id = hash_to_id[s.hash]
-                        else : 
-                            s = State('F', 'F', 'T', self.bet, self.dealer_card, self.total+new_card)
-                            new_id = hash_to_id[s.hash]
+        if new_card == 1 : # If the new card is an ace
+            if self.ace_count > 0 : # We have aces (atmost 1 can be soft)
+                pass
+            else: # We don't have any aces
+                pass
+        else : # If the new card is a number not an ace
+            if self.ace_count > 0 : # We have aces (atmost 1 can be soft)
+                pass
+            else: # We don't have any aces
+                pass
+
+        # if self.has_ace == 'F': 
+        #     # Not an ace
+        #     if new_card != 1 :
+        #         if(self.total + new_card) > 21 :
+        #             return -1 # Or bust state
+        #         else :
+        #             if self.mult_cards == 'T' :
+        #                 s = State('F', 'F', 'T', self.bet, self.dealer_card, self.total+new_card)
+        #             else : 
+        #                 if (self.total == new_card):
+        #                     s = State('T', 'F', 'T', self.bet, self.dealer_card, self.total+new_card)
+        #                 else : 
+        #                     s = State('F', 'F', 'T', self.bet, self.dealer_card, self.total+new_card)
+
+        #     # New card is an ace
+        #     else : 
+        #         if(self.total + new_card) > 21 :
+        #             return -1 # Or bust state
+        #         else :
+        #             if self.mult_cards == 'T' :
+        #                     s = State('F', 'T', 'T', self.bet, self.dealer_card, self.total+new_card)
+        #             else : 
+        #                 if (self.total == new_card):
+        #                     s = State('T', 'F', 'T', self.bet, self.dealer_card, self.total+new_card)
+        #                 else : 
+        #                     s = State('F', 'F', 'T', self.bet, self.dealer_card, self.total+new_card)
                 
 
 
-        
+        new_id = hash_to_id[s.hash]        
         return new_id
 
     def stand(self):
@@ -110,48 +136,48 @@ def enumerate_all_states():
     #         pass
     #     else :
     #         pass
-    
-    for dc in range(1, 11):
-        # Dealer card 1 will be dealt specially 
-        for total in range(1, 22): # Total 21 is different from black jack state? 
-            s = State('F', 'F', 'T', 1.0, dc, total)
-            all_states.append(s)
-            hash_to_id[s.hash] = id_
-            id_ += 1
-        
-        # Ace with other in 2 to 9
-        for other in range(2, 10):
-            s = State('F', 'T', 'T', 1.0, dc, other)
-            all_states.append(s)
-            hash_to_id[s.hash] = id_
-            id_ += 1
-        
-        # Pair with 2 to 10
-        for p in range(2, 11):
-            s = State('T', 'F', 'T', 1.0, dc, 2*p)
+    for bet in range(1, 3):
+        for dc in range(1, 11):
+            # Dealer card 1 will be dealt specially 
+            for total in range(1, 22): # Total 21 is different from black jack state? 
+                s = State('F', 'F', 'T', bet, dc, total)
+                all_states.append(s)
+                hash_to_id[s.hash] = id_
+                id_ += 1
+            
+            # Ace with other in 2 to 9
+            for other in range(2, 10):
+                s = State('F', 'T', 'T', bet, dc, other)
+                all_states.append(s)
+                hash_to_id[s.hash] = id_
+                id_ += 1
+            
+            # Pair with 2 to 10
+            for p in range(2, 11):
+                s = State('T', 'F', 'T', bet, dc, 2*p)
+                all_states.append(s)
+                hash_to_id[s.hash] = id_
+                id_ += 1
+
+            # Pair of aces 
+            s = State('T', 'T', 'T', bet, dc, 1)
             all_states.append(s)
             hash_to_id[s.hash] = id_
             id_ += 1
 
-        # Pair of aces 
-        s = State('T', 'T', 'T', 1.0, dc, 1)
-        all_states.append(s)
-        hash_to_id[s.hash] = id_
-        id_ += 1
-
-        # What's special in this state
-        # The blackjack state
-        s = State( 'F' , 'T', 'T', 1.0, dc, 10)
-        all_states.append(s)
-        hash_to_id[s.hash] = id_
-        id_ += 1
-
-        # Singular states
-        for card in range(1, 11):
-            s = State('T', 'F', 'F', 1.0, dc, (card if card>1 else 0))
+            # What's special in this state
+            # The blackjack state
+            s = State( 'F' , 'T', 'T', bet, dc, 10)
             all_states.append(s)
             hash_to_id[s.hash] = id_
             id_ += 1
+
+            # Singular states
+            for card in range(1, 11):
+                s = State('T', 'F', 'F', bet, dc, (card if card>1 else 0))
+                all_states.append(s)
+                hash_to_id[s.hash] = id_
+                id_ += 1
         
 if __name__ == "__main__":
     prob = float(sys.argv[1])
