@@ -26,7 +26,7 @@ class State:
         self.final_reward = 0.0 # To be calculated
 
         # self.hash = (self.has_pair) + "_" + (self.mult_cards) + "_" + str(self.ace_count) + "_" + str(self.non_ace_sum) + "_"  + str(self.bet) + "_" + str(self.dealer_card) + "_" + str(self.total)
-        self.hash = (self.has_pair) + "_" + (self.mult_cards) + "_" + str(self.ace_count) + "_" + str(self.non_ace_sum) + "_"  + str(self.bet) + "_" + str(self.dealer_card)
+        self.hash = (self.has_pair) + "_" + (self.mult_cards) + "_" + str(self.ace_count) + "_" + str(self.non_ace_sum) + "_"  + str(int(self.bet)) + "_" + str(self.dealer_card) + "_" + self.blackjack
         # self.hash = 'F_F_1_2_5'
         self.id = -1
     
@@ -195,7 +195,13 @@ class State:
         pass
     
     def split(self):
-        pass
+        assert(self.has_pair == 'T')
+        # What to return ?
+        s = State('F', 'F', self.ace_count//2, self.non_ace_sum//2, self.bet, self.dealer_card, self.blackjack)
+        
+        # IN case of splitting aces can only be done once
+        
+        return(hash_to_id[s.hash])
     
     def double(self):
         pass
@@ -203,6 +209,76 @@ class State:
     # returns 
     # def transition(self, action):
     #     if action == 'H' :
+
+# To save it in Policy.txt
+def print_output():
+    writeString = ""
+    
+    # ONLY for initial states
+
+    # STATES 5 to 20
+    for total in range(5, 20):
+        writeString += str(total) + '\t'
+        
+        for dc in range(2, 11):
+            s = State('F', 'T', 0, total, 1.0, dc, 'F')
+            st = all_states[hash_to_id[s.hash]]
+            writeString += st.best_move + ' '
+        
+        s = State('F', 'T', 0, total, 1.0, 1, 'F')
+        st = all_states[hash_to_id[s.hash]]
+        writeString += st.best_move
+
+        writeString += '\n'
+
+    # STATES A2...A9
+    for other in range(2, 10):
+        writeString += 'A' + str(other) + '\t'
+
+        for dc in range(2, 11):
+            s = State('F', 'T', 1, other, 1.0, dc, 'F')
+            st = all_states[hash_to_id[s.hash]]
+            writeString += st.best_move + ' '
+        
+        s = State('F', 'T', 0, other, 1.0, 1, 'F')
+        st = all_states[hash_to_id[s.hash]]
+        writeString += st.best_move
+
+        writeString += '\n'
+
+    # STATES 22, 33 .... 1010
+    for p in range(2, 11):
+        writeString += str(p) + str(p) + '\t'
+
+        for dc in range(2, 11):
+            s = State('T', 'T', 0, 2*p, 1.0, dc, 'F')
+            st = all_states[hash_to_id[s.hash]]
+            writeString += st.best_move + ' '
+        
+        s = State('T', 'T', 0, 2*p, 1.0, 1, 'F')
+        st = all_states[hash_to_id[s.hash]]
+        writeString += st.best_move
+
+        writeString += '\n'
+
+    # STATE AA
+    writeString += 'AA' + '\t'
+
+    for dc in range(2, 11):
+        s = State('T', 'T', 2, 0, 1.0, dc, 'F')
+        st = all_states[hash_to_id[s.hash]]
+        writeString += st.best_move + ' '
+    
+    s = State('T', 'T', 2, 0, 1.0, 1, 'F')
+    st = all_states[hash_to_id[s.hash]]
+    writeString += st.best_move
+
+    # writeString += '\n'
+
+    with open("Policy.txt","w") as outfile:
+        outfile.write(writeString)
+        outfile.close()
+
 
 
 def enumerate_all_states():
@@ -216,11 +292,14 @@ def enumerate_all_states():
     #         pass
     #     else :
     #         pass
+
+    # TODO : ENUMERATE all these states correctly :
+
     for bet in range(1, 3):
         for dc in range(1, 11):
             # Dealer card 1 will be dealt specially 
             for total in range(1, 22): # Total 21 is different from black jack state? 
-                s = State('F', 'F', 'T', bet, dc, total)
+                s = State('F', 'T', 'T', bet, dc, total)
                 all_states.append(s)
                 hash_to_id[s.hash] = id_
                 id_ += 1
